@@ -2,43 +2,35 @@ const getPoemBtn = document.getElementById('get-poem');
 const poemEl = document.getElementById('poem');
 const poemURL = 'https://poetrydb.org/random,linecount/1;12/author,title,lines.json';
 
-const getJSON = url => fetch(url).then(res => res.json());
+const getJSON = (url) => fetch(url).then((res) => res.json());
 
-const pipe = (...fns) => firstArg => fns.reduce((returnValue, fn) => fn(returnValue), firstArg);
+const pipe = (...fns) => (firstArg) =>
+  fns.reduce((returnValue, fn) => fn(returnValue), firstArg);
 
-const makeTag = tag => str => `<${tag}>${str}</${tag}>`;
+const makeTag = (tag) => (str) => `<${tag}>${str}</${tag}>`;
 
 // complete this function
-const makePoemHTML = (poem) => {
-    const h2 = makeTag("h2");
-    const h3 = makeTag("h3");
-    const em = makeTag("em");
-    const p = makeTag("p");
+const makePoemHTML = (data) => {
+  var poem = ''
+  const [{author, lines, title}] = data;
 
-    // Generate the title HTML
-    const titleHTML = h2(poem.title);
-
-    // Generate the author HTML
-    const authorHTML = h3(em("by ") + poem.author);
-
-    // Generate stanzas HTML
-    const stanzasHTML = poem.lines
-        .map((line, index, lines) => {
-            const isLastLine = index === lines.length - 1 || !lines[index + 1];
-            return line + (isLastLine ? "" : "<br>");
-        })
-        .join("") // Combine all lines into one string
-        .split("<br><br>") // Split stanzas by double <br> (if applicable)
-        .map(stanza => p(stanza)) // Wrap each stanza in <p>
-        .join(""); // Combine all stanzas
-
-
-    return titleHTML + authorHTML + stanzasHTML;
-
+  poem +=
+    makeTag(`h2`)(title) + pipe(makeTag(`em`), makeTag(`h3`))(`by ` + author);
+const joinLines = arr => arr.join(`<br>`);
+const splitLines = str => str.split(`<br><br>`);
+const makeStanza = pipe(joinLines, splitLines);
+const stanza = makeTag(`p`);
+  
+  var stanzaArray = makeStanza(lines).map(str => stanza(str));
+  var stanzaString = stanzaArray.join(``)
+  
+  poem +=
+    stanzaString
+    return poem
 };
 
 // attach a click event to #get-poem
-getPoemBtn.onclick = async function() {
+getPoemBtn.onclick = async function () {
   // renders the HTML string returned by makePoemHTML to #poem
-  poemEl.innerHTML = makePoemHTML(await getJSON(poemURL))
-}
+  poemEl.innerHTML = makePoemHTML(await getJSON(poemURL));
+};
